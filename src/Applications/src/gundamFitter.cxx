@@ -237,7 +237,6 @@ int main(int argc, char** argv){
 
   // -a
   fitter.getLikelihoodInterface().getDataSetManager().getPropagator().setLoadAsimovData(clParser.isOptionTriggered("asimov") );
-  fitter.getLikelihoodInterface().getDataSetManager().getPropagator().setLoadAsimovData(clParser.isOptionTriggered("asimov") );
 
   // --use-data-entry
   if( clParser.isOptionTriggered("useDataEntry") ){

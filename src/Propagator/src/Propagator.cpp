@@ -50,7 +50,6 @@ void Propagator::readConfigImpl(){
 
   // Monitoring parameters
   _showEventBreakdown_ = GenericToolbox::Json::fetchValue(_config_, "showEventBreakdown", _showEventBreakdown_);
-  _throwAsimovToyParameters_ = GenericToolbox::Json::fetchValue(_config_, "throwAsimovFitParameters", _throwAsimovToyParameters_);
   _enableStatThrowInToys_ = GenericToolbox::Json::fetchValue(_config_, "enableStatThrowInToys", _enableStatThrowInToys_);
   _gaussStatThrowInToys_ = GenericToolbox::Json::fetchValue(_config_, "gaussStatThrowInToys", _gaussStatThrowInToys_);
   _enableEventMcThrow_ = GenericToolbox::Json::fetchValue(_config_, "enableEventMcThrow", _enableEventMcThrow_);
@@ -145,18 +144,16 @@ void Propagator::propagateParameters(){
     }
   }
 
-  this->resetReweight();
   this->reweightMcEvents();
   this->refillMcHistograms();
 
 }
-void Propagator::resetReweight(){
+void Propagator::reweightMcEvents() {
+  reweightTimer.start();
+
   std::for_each(_dialCollectionList_.begin(), _dialCollectionList_.end(), [&]( DialCollection& dc_){
     dc_.updateInputBuffers();
   });
-}
-void Propagator::reweightMcEvents() {
-  reweightTimer.start();
 
   bool usedGPU{false};
 #ifdef GUNDAM_USING_CACHE_MANAGER
@@ -180,29 +177,15 @@ void Propagator::refillMcHistograms(){
 
   refillHistogramTimer.stop();
 }
+void Propagator::clear(){
+  _eventDialCache_ = EventDialCache();
+  _sampleSet_.clearMcContainers();
+  for( auto& dialCollection: _dialCollectionList_ ) {
+    if( not dialCollection.getGlobalDialLeafName().empty() ) { dialCollection.clear(); }
+  }
+}
 
 // Misc
-std::string Propagator::getSampleBreakdownTableStr() const{
-  GenericToolbox::TablePrinter t;
-
-  t << "Sample" << GenericToolbox::TablePrinter::NextColumn;
-  t << "MC (# binned event)" << GenericToolbox::TablePrinter::NextColumn;
-  t << "Data (# binned event)" << GenericToolbox::TablePrinter::NextColumn;
-  t << "MC (weighted)" << GenericToolbox::TablePrinter::NextColumn;
-  t << "Data (weighted)" << GenericToolbox::TablePrinter::NextLine;
-
-  for( auto& sample : _sampleSet_.getSampleList() ){
-    t << "\"" << sample.getName() << "\"" << GenericToolbox::TablePrinter::NextColumn;
-    t << sample.getMcContainer().getNbBinnedEvents() << GenericToolbox::TablePrinter::NextColumn;
-    t << sample.getDataContainer().getNbBinnedEvents() << GenericToolbox::TablePrinter::NextColumn;
-    t << sample.getMcContainer().getSumWeights() << GenericToolbox::TablePrinter::NextColumn;
-    t << sample.getDataContainer().getSumWeights() << GenericToolbox::TablePrinter::NextLine;
-  }
-
-  std::stringstream ss;
-  ss << t.generateTableString();
-  return ss.str();
-}
 void Propagator::printBreakdowns(){
   if( _showEventBreakdown_ ){
 
@@ -228,7 +211,6 @@ void Propagator::printBreakdowns(){
       parSet.setMaskedForPropagation( true );
     }
 
-    resetReweight();
     reweightMcEvents();
     for( size_t iSample = 0 ; iSample < _sampleSet_.getSampleList().size() ; iSample++ ){
       stageBreakdownList[iSample][iStage] = _sampleSet_.getSampleList()[iSample].getMcContainer().getSumWeights();
@@ -236,7 +218,6 @@ void Propagator::printBreakdowns(){
 
     for( auto* parSetPtr : maskedParSetList ){
       parSetPtr->setMaskedForPropagation(false);
-      resetReweight();
       reweightMcEvents();
       iStage++;
       for( size_t iSample = 0 ; iSample < _sampleSet_.getSampleList().size() ; iSample++ ){

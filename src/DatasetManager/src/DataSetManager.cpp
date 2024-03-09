@@ -48,10 +48,47 @@ void DataSetManager::initializeImpl(){
 
   _propagator_.getPlotGenerator().setSampleSetPtr(&_propagator_.getSampleSet());
   _propagator_.getPlotGenerator().initialize();
-
-  loadData();
 }
 
+void DataSetManager::loadPropagator(LoadPreset loadPreset_){
+  LogWarning << "Loading the propagator with preset: " << loadPreset_.toString() << std::endl;
+
+  LogThrowIf(loadPreset_==LoadPreset::Unset, "Invalid load preset.");
+
+  /// make everything is cleared
+  LogInfo << "Clearing propagator content..." << std::endl;
+  _propagator_.clear();
+
+  for( auto& dataSet : _dataSetList_ ){
+    LogContinueIf(not dataSet.isEnabled(), "Dataset \"" << dataSet.getName() << "\" is disabled. Skipping");
+    LogInfo << "Loading with dataset: " << dataSet.getName() << std::endl;
+
+    DataDispenser* dispenserPtr{nullptr};
+    switch( loadPreset_.value ){
+      case LoadPreset::Asimov:
+        dispenserPtr = &dataSet.getDataDispenserDict().at("Asimov");
+        break;
+      case LoadPreset::Data:
+        dispenserPtr = &dataSet.getSelectedDataDispenser();
+        break;
+      case LoadPreset::Toy:
+        dispenserPtr = &dataSet.getToyDataDispenser();
+        break;
+      default:
+        LogThrow("Preset not found for: " << loadPreset_.toString());
+        break;
+    }
+
+    LogThrowIf(dispenserPtr == nullptr, "Not a valid data dispenser.");
+
+    // loading in the propagator
+    LogInfo << "Reading dataset: " << dataSet.getName() << "/" << dispenserPtr->getParameters().name << std::endl;
+    dispenserPtr->load( _propagator_ );
+
+  }
+
+  LogInfo << "Loaded propagator with preset: " << loadPreset_.toString() << std::endl;
+}
 void DataSetManager::loadData(){
   LogInfo << "Loading data into the PropagatorEngine..." << std::endl;
 
@@ -67,21 +104,12 @@ void DataSetManager::loadData(){
     if( _propagator_.isLoadAsimovData() ){ dispenser = &dataSet.getDataDispenserDict().at("Asimov"); }
 
     // checking what we are loading
-    if(dispenser->getParameters().name != "Asimov" ){ allAsimov = false; }
+    if( dispenser->getParameters().name != "Asimov" ){ allAsimov = false; }
     if( dispenser->getParameters().useMcContainer ){ usedMcContainer = true; }
 
     // loading in the propagator
     LogInfo << "Reading dataset: " << dataSet.getName() << "/" << dispenser->getParameters().name << std::endl;
     dispenser->load( _propagator_ );
-
-    LogInfo << "Resizing dial containers..." << std::endl;
-    for( auto& dialCollection : _propagator_.getDialCollectionList() ) {
-      if( not dialCollection.isBinned() ){ dialCollection.resizeContainers(); }
-    }
-
-    LogInfo << "Build reference cache..." << std::endl;
-    _propagator_.getEventDialCache().shrinkIndexedCache();
-    _propagator_.getEventDialCache().buildReferenceCache(_propagator_.getSampleSet(), _propagator_.getDialCollectionList());
   }
 
   // Copy to data container
@@ -93,7 +121,6 @@ void DataSetManager::loadData(){
         LogInfo << "Propagating prior parameters on the initially loaded events..." << std::endl;
         bool cacheManagerState = GundamGlobals::getEnableCacheManager();
         GundamGlobals::setEnableCacheManager(false);
-        _propagator_.resetReweight();
         _propagator_.reweightMcEvents();
         GundamGlobals::setEnableCacheManager(cacheManagerState);
 
@@ -141,7 +168,6 @@ void DataSetManager::loadData(){
 
     bool cacheManagerState = GundamGlobals::getEnableCacheManager();
     GundamGlobals::setEnableCacheManager(false);
-    _propagator_.resetReweight();
     _propagator_.reweightMcEvents();
     GundamGlobals::setEnableCacheManager(cacheManagerState);
 
@@ -206,7 +232,6 @@ void DataSetManager::loadData(){
 #endif
 
   LogInfo << "Propagating prior parameters on events..." << std::endl;
-  _propagator_.resetReweight();
   _propagator_.reweightMcEvents();
 
   LogInfo << "Filling up sample bin caches..." << std::endl;
@@ -257,3 +282,4 @@ void DataSetManager::loadData(){
   /// Propagator needs to be fast, let the workers wait for the signal
   GundamGlobals::getParallelWorker().setCpuTimeSaverIsEnabled(false);
 }
+

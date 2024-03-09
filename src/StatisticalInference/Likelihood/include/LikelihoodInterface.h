@@ -45,6 +45,8 @@ protected:
   void readConfigImpl() override;
   void initializeImpl() override;
 
+  void loadData();
+
 public:
   // const getters
   [[nodiscard]] int getNbParameters() const {return _nbParameters_; }
@@ -69,18 +71,27 @@ public:
   [[nodiscard]] double evalStatLikelihood(const Sample& sample_) const;
   [[nodiscard]] double evalPenaltyLikelihood(const ParameterSet& parSet_) const;
   [[nodiscard]] std::string getSummary() const;
+  [[nodiscard]] std::string getSampleBreakdown() const;
 
   // dev deprecated
   [[deprecated("use getDataSetManager().getPropagator()")]] [[nodiscard]] const Propagator& getPropagator() const { return _dataSetManager_.getPropagator(); }
   [[deprecated("use getDataSetManager().getPropagator()")]] Propagator& getPropagator(){ return _dataSetManager_.getPropagator(); }
 
 private:
+  // config
+  bool _useAsimovData_{false};
+  bool _showEventBreakdown_{true};
+  bool _generateToyExperiment_{false};
+
   // internals
   int _nbParameters_{0};
   int _nbSampleBins_{0};
 
   /// Definition of data sets to use for filling the Propagator
   DataSetManager _dataSetManager_{};
+
+  /// Keep the data event list and histograms here
+  std::vector<SampleElement> _dataSampleList_{};
 
   /// Statistical likelihood
   std::shared_ptr<JointProbability::JointProbabilityBase> _jointProbabilityPtr_{nullptr};

@@ -51,12 +51,9 @@ void Sample::initializeImpl() {
 }
 
 bool Sample::isDatasetValid(const std::string& datasetName_){
-  if( _enabledDatasetList_.empty() ) return true;
-  for( auto& dataSetName : _enabledDatasetList_){
-    if( dataSetName == "*" or dataSetName == datasetName_ ){
-      return true;
-    }
-  }
-  return false;
+  if( _enabledDatasetList_.empty() ){ return true; }
+  return std::any_of(_enabledDatasetList_.begin(), _enabledDatasetList_.end(), [&](const std::string& dataset_){
+    return dataset_ == "*" or dataset_ == datasetName_;
+  });
 }
 

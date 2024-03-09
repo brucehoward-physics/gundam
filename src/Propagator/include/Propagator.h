@@ -29,20 +29,14 @@ public:
   Propagator() = default;
 
   // Setters
-  void setShowTimeStats(bool showTimeStats){ _showTimeStats_ = showTimeStats; }
-  void setThrowAsimovToyParameters(bool throwAsimovToyParameters){ _throwAsimovToyParameters_ = throwAsimovToyParameters; }
   void setEnableEigenToOrigInPropagate(bool enableEigenToOrigInPropagate){ _enableEigenToOrigInPropagate_ = enableEigenToOrigInPropagate; }
   void setIThrow(int iThrow){ _iThrow_ = iThrow; }
-  void setLoadAsimovData(bool loadAsimovData){ _loadAsimovData_ = loadAsimovData; }
   void setParameterInjectorConfig(const JsonType &parameterInjector){ _parameterInjectorMc_ = parameterInjector; }
 
   // Const getters
-  [[nodiscard]] bool isThrowAsimovToyParameters() const { return _throwAsimovToyParameters_; }
   [[nodiscard]] bool isEnableStatThrowInToys() const { return _enableStatThrowInToys_; }
   [[nodiscard]] bool isEnableEventMcThrow() const { return _enableEventMcThrow_; }
   [[nodiscard]] bool isGaussStatThrowInToys() const { return _gaussStatThrowInToys_; }
-  [[nodiscard]] bool isLoadAsimovData() const { return _loadAsimovData_; }
-  [[nodiscard]] bool isShowEventBreakdown() const { return _showEventBreakdown_; }
   [[nodiscard]] bool isDebugPrintLoadedEvents() const { return _debugPrintLoadedEvents_; }
   [[nodiscard]] int getDebugPrintLoadedEventsNbPerSample() const { return _debugPrintLoadedEventsNbPerSample_; }
   [[nodiscard]] int getIThrow() const { return _iThrow_; }
@@ -61,9 +55,9 @@ public:
 
   // Core
   void propagateParameters();
-  void resetReweight();
   void reweightMcEvents();
   void refillMcHistograms();
+  void clear();
 
   // Misc
   [[nodiscard]] std::string getSampleBreakdownTableStr() const;
@@ -82,8 +76,6 @@ protected:
 
 private:
   // Parameters
-  bool _showTimeStats_{false};
-  bool _loadAsimovData_{false};
   bool _debugPrintLoadedEvents_{false};
   bool _devSingleThreadReweight_{false};
   bool _devSingleThreadHistFill_{false};
@@ -92,11 +84,9 @@ private:
   JsonType _parameterInjectorToy_;
 
   // Internals
-  bool _throwAsimovToyParameters_{false};
   bool _enableStatThrowInToys_{true};
   bool _gaussStatThrowInToys_{false};
   bool _enableEventMcThrow_{true};
-  bool _showEventBreakdown_{true};
   bool _enableEigenToOrigInPropagate_{true};
   int _iThrow_{-1};
 

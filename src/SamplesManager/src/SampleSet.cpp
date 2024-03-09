@@ -57,10 +57,7 @@ void SampleSet::copyMcEventListToDataContainer(){
   }
 }
 void SampleSet::clearMcContainers(){
-  for( auto& sample : _sampleList_ ){
-    LogInfo << "Clearing event list for \"" << sample.getName() << "\"" << std::endl;
-    sample.getMcContainer().getEventList().clear();
-  }
+  for( auto& sample : _sampleList_ ){ sample.getMcContainer().getEventList().clear(); }
 }
 
 std::vector<std::string> SampleSet::fetchRequestedVariablesForIndexing() const{

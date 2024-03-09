@@ -27,9 +27,8 @@ protected:
   void initializeImpl() override;
 
 public:
-  // SETTERS
+  // setters
   void setIndex(int index){ _index_ = index; }
-  void setLlhStatBuffer(double llhStatBuffer_) { _llhStatBuffer_ = llhStatBuffer_; }
   void setName(const std::string &name){ _name_ = name; }
   void setBinningFilePath(const std::string &binningFilePath_){ _binningFilePath_ = binningFilePath_; }
   void setSelectionCutStr(const std::string &selectionCutStr_){ _selectionCutStr_ = selectionCutStr_; }
@@ -38,7 +37,6 @@ public:
   // const getters
   [[nodiscard]] bool isEnabled() const{ return _isEnabled_; }
   [[nodiscard]] int getIndex() const{ return _index_; }
-  [[nodiscard]] double getLlhStatBuffer() const { return _llhStatBuffer_; }
   [[nodiscard]] const std::string &getName() const{ return _name_; }
   [[nodiscard]] const std::string &getBinningFilePath() const{ return _binningFilePath_; }
   [[nodiscard]] const std::string &getSelectionCutsStr() const{ return _selectionCutStr_; }
@@ -46,12 +44,12 @@ public:
   [[nodiscard]] const SampleElement &getMcContainer() const{ return _mcContainer_; }
   [[nodiscard]] const SampleElement &getDataContainer() const{ return _dataContainer_; }
 
-  // getters
+  // mutable getters
   DataBinSet &getBinning() { return _binning_; }
   SampleElement &getMcContainer(){ return _mcContainer_; }
   SampleElement &getDataContainer(){ return _dataContainer_; }
 
-  // Misc
+  // misc
   bool isDatasetValid(const std::string& datasetName_);
 
 private:
@@ -64,7 +62,6 @@ private:
   std::vector<std::string> _enabledDatasetList_;
 
   // Internals
-  double _llhStatBuffer_{std::nan("unset")}; // set by SampleSet which hold the joinProbability obj
   DataBinSet _binning_;
   SampleElement _mcContainer_;
   SampleElement _dataContainer_;

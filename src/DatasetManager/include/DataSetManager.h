@@ -11,6 +11,15 @@
 #include "JsonBaseClass.h"
 
 
+#define ENUM_NAME LoadPreset
+#define ENUM_FIELDS \
+  ENUM_FIELD( Unset, 0 ) \
+  ENUM_FIELD( Asimov ) \
+  ENUM_FIELD( Data ) \
+  ENUM_FIELD( Toy )
+#include "GenericToolbox.MakeEnum.h"
+
+
 class DataSetManager : public JsonBaseClass {
 
 protected:
@@ -30,6 +39,9 @@ public:
   EventTreeWriter& getTreeWriter(){ return _treeWriter_; }
   std::vector<DatasetDefinition>& getDataSetList(){ return _dataSetList_; }
 
+  // core
+  void loadPropagator(LoadPreset loadPreset_);
+
 protected:
   void loadData();
 
@@ -38,6 +50,7 @@ private:
   Propagator _propagator_{};
   EventTreeWriter _treeWriter_{};
   std::vector<DatasetDefinition> _dataSetList_{};
+  LoadPreset _loadPreset_{LoadPreset::Unset};
 
 };
 

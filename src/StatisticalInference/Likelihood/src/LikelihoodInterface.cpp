@@ -58,20 +58,26 @@ void LikelihoodInterface::readConfigImpl(){
 void LikelihoodInterface::initializeImpl() {
   LogWarning << "Initializing LikelihoodInterface..." << std::endl;
 
-  _dataSetManager_.initialize(); // parameter should be at their nominal value
-  _jointProbabilityPtr_->initialize();
+  /// Initialize dataset manager in order to use it
+  _dataSetManager_.initialize();
 
+  /// Now fill the sample with the data
+  this->loadData();
+
+  /// Grab general info about the likelihood
   LogInfo << "Fetching the effective number of fit parameters..." << std::endl;
   _nbParameters_ = 0;
   for( auto& parSet : _dataSetManager_.getPropagator().getParametersManager().getParameterSetsList() ){
     _nbParameters_ += int( parSet.getNbParameters() );
   }
-
   LogInfo << "Fetching the number of bins parameters..." << std::endl;
   _nbSampleBins_ = 0;
   for( auto& sample : _dataSetManager_.getPropagator().getSampleSet().getSampleList() ){
-    _nbSampleBins_ += int(sample.getBinning().getBinList().size() );
+    _nbSampleBins_ += int( sample.getBinning().getBinList().size() );
   }
+
+  /// Initialize the joint probability function
+  _jointProbabilityPtr_->initialize();
 
   /// some joint fit probability might need to save the value of the nominal histogram.
   /// here we know every parameter is at its nominal value
@@ -85,7 +91,6 @@ void LikelihoodInterface::initializeImpl() {
     _dataSetManager_.getPropagator().getParametersManager().injectParameterValues(
         ConfigUtils::getForwardedConfig(_dataSetManager_.getPropagator().getParameterInjectorMc())
     );
-    _dataSetManager_.getPropagator().resetReweight();
     _dataSetManager_.getPropagator().reweightMcEvents();
   }
 
@@ -97,6 +102,52 @@ void LikelihoodInterface::initializeImpl() {
   _dataSetManager_.getPropagator().printBreakdowns();
 
   LogInfo << "LikelihoodInterface initialized." << std::endl;
+}
+void LikelihoodInterface::loadData(){
+  LogInfo << "Loading data to the defined samples..." << std::endl;
+
+  /// temporarily disable the cache manager while loading. Only using CPU for the initialization
+  bool cacheManagerState = GundamGlobals::getEnableCacheManager();
+  GundamGlobals::setEnableCacheManager(false);
+
+  /// Load the data slot
+  LoadPreset loadPreset{ LoadPreset::Data };
+  if( _generateToyExperiment_ ){ loadPreset = LoadPreset::Toy; }
+  if( _useAsimovData_ )        { loadPreset = LoadPreset::Asimov; }
+  _dataSetManager_.loadPropagator( loadPreset );
+
+  /// do other things
+  if( _generateToyExperiment_ ){
+
+    // propagate
+    LogInfo << "Propagating prior parameters on the initially loaded events..." << std::endl;
+    _dataSetManager_.getPropagator().reweightMcEvents();
+
+    if( _showEventBreakdown_ ){
+      LogInfo << "Sample breakdown prior to the throwing:" << std::endl;
+      std::cout << getSampleBreakdown() << std::endl;
+    }
+
+    /// Re-activating the cache manager if selected
+    GundamGlobals::setEnableCacheManager( cacheManagerState );
+
+  }
+
+  /// copying to the data slot
+  _dataSampleList_.reserve(
+      _dataSetManager_.getPropagator().getSampleSet().getSampleList().size()
+  );
+  for( auto& sample : _dataSetManager_.getPropagator().getSampleSet().getSampleList() ){
+    _dataSampleList_.emplace_back( sample.getMcContainer() );
+  }
+
+  if( not _useAsimovData_ ){
+    /// now load the
+
+
+  }
+
+  LogInfo << "Data loaded." << std::endl;
 }
 
 void LikelihoodInterface::propagateAndEvalLikelihood(){
@@ -153,7 +204,7 @@ double LikelihoodInterface::evalPenaltyLikelihood(const ParameterSet& parSet_) c
 
   return buffer;
 }
-[[nodiscard]] std::string LikelihoodInterface::getSummary() const {
+std::string LikelihoodInterface::getSummary() const {
   std::stringstream ss;
 
   this->evalLikelihood(); // make sure the buffer is up-to-date
@@ -180,6 +231,31 @@ double LikelihoodInterface::evalPenaltyLikelihood(const ParameterSet& parSet_) c
       }
   );
   return ss.str();
+}
+std::string LikelihoodInterface::getSampleBreakdown() const {
+
+  bool withData{not _dataSampleList_.empty()};
+
+  GenericToolbox::TablePrinter t;
+
+  t << "Sample" << GenericToolbox::TablePrinter::NextColumn;
+  t << "MC (# binned event)" << GenericToolbox::TablePrinter::NextColumn;
+  if( withData ){ t << "Data (# binned event)" << GenericToolbox::TablePrinter::NextColumn; }
+  t << "MC (weighted)" << GenericToolbox::TablePrinter::NextColumn;
+  if( withData ){ t << "Data (weighted)" << GenericToolbox::TablePrinter::NextLine; }
+
+  for( auto& sample : _dataSetManager_.getPropagator().getSampleSet().getSampleList() ){
+    t << "\"" << sample.getName() << "\"" << GenericToolbox::TablePrinter::NextColumn;
+    t << sample.getMcContainer().getNbBinnedEvents() << GenericToolbox::TablePrinter::NextColumn;
+    if( withData ){ t << sample.getDataContainer().getNbBinnedEvents() << GenericToolbox::TablePrinter::NextColumn; }
+    t << sample.getMcContainer().getSumWeights() << GenericToolbox::TablePrinter::NextColumn;
+    if( withData ){ t << sample.getDataContainer().getSumWeights() << GenericToolbox::TablePrinter::NextLine; }
+  }
+
+  std::stringstream ss;
+  ss << t.generateTableString();
+  return ss.str();
+
 }
 
 // An MIT Style License
