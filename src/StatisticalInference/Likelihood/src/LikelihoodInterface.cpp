@@ -53,6 +53,13 @@ void LikelihoodInterface::readConfigImpl(){
   _jointProbabilityPtr_ = std::shared_ptr<JointProbability::JointProbabilityBase>( JointProbability::makeJointProbability( jointProbabilityTypeStr ) );
   _jointProbabilityPtr_->readConfig( configJointProbability );
 
+  /// local config
+  GenericToolbox::Json::deprecatedAction(_dataSetManager_.getPropagator().getConfig(), "showEventBreakdown", [&]{
+    LogAlert << R"("showEventBreakdown" should now be set under "likelihoodInterfaceConfig" instead of "propagatorConfig".)" << std::endl;
+    _showEventBreakdown_ = GenericToolbox::Json::fetchValue(_dataSetManager_.getPropagator().getConfig(), "showEventBreakdown", _showEventBreakdown_);
+  });
+  _showEventBreakdown_ = GenericToolbox::Json::fetchValue(_config_, "showEventBreakdown", _showEventBreakdown_);
+
   LogWarning << "LikelihoodInterface configured." << std::endl;
 }
 void LikelihoodInterface::initializeImpl() {
