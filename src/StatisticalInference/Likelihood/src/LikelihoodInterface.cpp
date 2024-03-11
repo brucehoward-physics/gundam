@@ -117,6 +117,9 @@ void LikelihoodInterface::loadData(){
   bool cacheManagerState = GundamGlobals::getEnableCacheManager();
   GundamGlobals::setEnableCacheManager(false);
 
+  /// clear data
+  _dataSampleList_.clear();
+
   /// Load the data slot
   LoadPreset loadPreset{ LoadPreset::Data };
   if( _generateToyExperiment_ ){ loadPreset = LoadPreset::Toy; }

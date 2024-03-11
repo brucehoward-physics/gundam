@@ -42,12 +42,10 @@ public:
   [[nodiscard]] const std::string &getSelectionCutsStr() const{ return _selectionCutStr_; }
   [[nodiscard]] const DataBinSet &getBinning() const{ return _binning_; }
   [[nodiscard]] const SampleElement &getMcContainer() const{ return _mcContainer_; }
-  [[nodiscard]] const SampleElement &getDataContainer() const{ return _dataContainer_; }
 
   // mutable getters
   DataBinSet &getBinning() { return _binning_; }
   SampleElement &getMcContainer(){ return _mcContainer_; }
-  SampleElement &getDataContainer(){ return _dataContainer_; }
 
   // misc
   bool isDatasetValid(const std::string& datasetName_);
@@ -64,7 +62,6 @@ private:
   // Internals
   DataBinSet _binning_;
   SampleElement _mcContainer_;
-  SampleElement _dataContainer_;
   std::vector<size_t> _dataSetIndexList_;
 
 };
