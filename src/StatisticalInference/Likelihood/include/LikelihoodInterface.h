@@ -72,6 +72,7 @@ public:
   [[nodiscard]] double evalPenaltyLikelihood(const ParameterSet& parSet_) const;
   [[nodiscard]] std::string getSummary() const;
   [[nodiscard]] std::string getSampleBreakdown() const;
+  [[nodiscard]] std::string getEventBreakdown() const;
 
   // dev deprecated
   [[deprecated("use getDataSetManager().getPropagator()")]] [[nodiscard]] const Propagator& getPropagator() const { return _dataSetManager_.getPropagator(); }

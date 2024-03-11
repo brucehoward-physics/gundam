@@ -57,7 +57,7 @@ void DataSetManager::loadPropagator(LoadPreset loadPreset_){
 
   /// make everything is cleared
   LogInfo << "Clearing propagator content..." << std::endl;
-  _propagator_.clear();
+  _propagator_.clearContainers();
 
   for( auto& dataSet : _dataSetList_ ){
     LogContinueIf(not dataSet.isEnabled(), "Dataset \"" << dataSet.getName() << "\" is disabled. Skipping");
@@ -79,9 +79,8 @@ void DataSetManager::loadPropagator(LoadPreset loadPreset_){
         break;
     }
 
-    LogThrowIf(dispenserPtr == nullptr, "Not a valid data dispenser.");
-
     // loading in the propagator
+    LogThrowIf(dispenserPtr == nullptr, "Not a valid data dispenser.");
     LogInfo << "Reading dataset: " << dataSet.getName() << "/" << dispenserPtr->getParameters().name << std::endl;
     dispenserPtr->load( _propagator_ );
 
@@ -89,6 +88,7 @@ void DataSetManager::loadPropagator(LoadPreset loadPreset_){
 
   LogInfo << "Loaded propagator with preset: " << loadPreset_.toString() << std::endl;
 }
+
 void DataSetManager::loadData(){
   LogInfo << "Loading data into the PropagatorEngine..." << std::endl;
 

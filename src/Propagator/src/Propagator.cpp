@@ -176,9 +176,15 @@ void Propagator::refillMcHistograms(){
 
   refillHistogramTimer.stop();
 }
-void Propagator::clear(){
+void Propagator::clearContainers(){
+
+  /// reset cache
   _eventDialCache_ = EventDialCache();
+
+  /// reset sample content
   _sampleSet_.clearMcContainers();
+
+  /// reset event-by-event dials
   for( auto& dialCollection: _dialCollectionList_ ) {
     if( not dialCollection.getGlobalDialLeafName().empty() ) { dialCollection.clear(); }
   }

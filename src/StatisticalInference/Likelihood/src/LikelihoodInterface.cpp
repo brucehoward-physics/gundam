@@ -133,26 +133,45 @@ void LikelihoodInterface::loadData(){
     if( _showEventBreakdown_ ){
       LogInfo << "Sample breakdown prior to the throwing:" << std::endl;
       std::cout << getSampleBreakdown() << std::endl;
+
+      // TODO: show events
     }
 
-    /// Re-activating the cache manager if selected
-    GundamGlobals::setEnableCacheManager( cacheManagerState );
+    _dataSetManager_.getPropagator().getParametersManager().throwParameters();
+
+    // Handling possible masks
+    for( auto& parSet : _dataSetManager_.getPropagator().getParametersManager().getParameterSetsList() ){
+      if( not parSet.isEnabled() ) continue;
+
+      if( parSet.isMaskForToyGeneration() ){
+        LogWarning << parSet.getName() << " will be masked for the toy generation." << std::endl;
+        parSet.setMaskedForPropagation( true );
+      }
+    }
+
+    LogInfo << "Propagating parameters on events..." << std::endl;
+    // Make sure before the copy to the data:
+    // At this point, MC events have been reweighted using their prior
+    // but when using eigen decomp, the conversion eigen -> original has a small computational error
+    for( auto& parSet: _dataSetManager_.getPropagator().getParametersManager().getParameterSetsList() ) {
+      if( parSet.isEnableEigenDecomp() ) { parSet.propagateEigenToOriginal(); }
+    }
 
   }
 
   /// copying to the data slot
-  _dataSampleList_.reserve(
-      _dataSetManager_.getPropagator().getSampleSet().getSampleList().size()
-  );
-  for( auto& sample : _dataSetManager_.getPropagator().getSampleSet().getSampleList() ){
-    _dataSampleList_.emplace_back( sample.getMcContainer() );
-  }
+  auto& propagatorSamples = _dataSetManager_.getPropagator().getSampleSet().getSampleList();
+  _dataSampleList_.reserve( propagatorSamples.size() );
+  for( auto& sample : propagatorSamples ){ _dataSampleList_.emplace_back( sample.getMcContainer() ); }
 
   if( not _useAsimovData_ ){
-    /// now load the
-
-
+    /// now load the Asimov to te propagator
+    _dataSetManager_.loadPropagator( LoadPreset::Asimov );
   }
+
+
+  /// Re-activating the cache manager if selected
+  GundamGlobals::setEnableCacheManager( cacheManagerState );
 
   LogInfo << "Data loaded." << std::endl;
 }
