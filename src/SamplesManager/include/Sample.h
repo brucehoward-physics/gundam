@@ -8,6 +8,7 @@
 
 #include "SampleElement.h"
 #include "DataBinSet.h"
+#include "Event.h"
 #include "JsonBaseClass.h"
 
 #include "nlohmann/json.hpp"
@@ -20,6 +21,25 @@
 
 
 class Sample : public JsonBaseClass {
+
+public:
+  struct DatasetProperties{
+    size_t dataSetIndex{0};
+    size_t eventOffSet{0};
+    size_t eventNb{0};
+  };
+
+  struct Histogram{
+    struct Bin{
+      int index{-1};
+      double content{0};
+      double error{0};
+      const DataBin* dataBinPtr{nullptr};
+      std::vector<Event*> eventPtrList{};
+    };
+    std::vector<Bin> binList{};
+    int nBins{0};
+  };
 
 protected:
   // called through public JsonBaseClass::readConfig() and JsonBaseClass::initialize()
@@ -41,11 +61,12 @@ public:
   [[nodiscard]] const std::string &getBinningFilePath() const{ return _binningFilePath_; }
   [[nodiscard]] const std::string &getSelectionCutsStr() const{ return _selectionCutStr_; }
   [[nodiscard]] const DataBinSet &getBinning() const{ return _binning_; }
-  [[nodiscard]] const SampleElement &getMcContainer() const{ return _mcContainer_; }
+  [[nodiscard]] const Histogram &getHistogram() const{ return _histogram_; }
+  [[nodiscard]] const std::vector<Event> &getEventList() const{ return _eventList_; }
 
   // mutable getters
   DataBinSet &getBinning() { return _binning_; }
-  SampleElement &getMcContainer(){ return _mcContainer_; }
+  std::vector<Event> &getEventList(){ return _eventList_; }
 
   // misc
   bool isDatasetValid(const std::string& datasetName_);
@@ -61,8 +82,12 @@ private:
 
   // Internals
   DataBinSet _binning_;
-  SampleElement _mcContainer_;
   std::vector<size_t> _dataSetIndexList_;
+
+
+  Histogram _histogram_{};
+  std::vector<Event> _eventList_{};
+  std::vector<DatasetProperties> _loadedDatasetList_{};
 
 };
 

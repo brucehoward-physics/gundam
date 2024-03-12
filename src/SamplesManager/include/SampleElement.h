@@ -17,35 +17,12 @@
 
 class SampleElement{
 
-public:
-  struct DatasetProperties{
-    size_t dataSetIndex{0};
-    size_t eventOffSet{0};
-    size_t eventNb{0};
-  };
 
-  struct Histogram{
-    struct Bin{
-      int index{-1};
-      double content{0};
-      double error{0};
-      const DataBin* dataBinPtr{nullptr};
-      std::vector<Event*> eventPtrList{};
-    };
-    std::vector<Bin> binList{};
-    int nBins{0};
-  };
 
 public:
   SampleElement() = default;
 
-  // setters
-  void setName(const std::string& name_){ _name_ = name_; }
 
-  // const-getters
-  [[nodiscard]] const std::string& getName() const{ return _name_; }
-  [[nodiscard]] const std::vector<Event> &getEventList() const{ return _eventList_; }
-  [[nodiscard]] const Histogram &getHistogram() const{ return _histogram_; }
 
   // mutable-getters
   std::vector<Event> &getEventList(){ return _eventList_; }
@@ -71,11 +48,6 @@ public:
   [[nodiscard]] std::string getSummary() const;
   friend std::ostream& operator <<( std::ostream& o, const SampleElement& this_ );
 
-private:
-  std::string _name_{};
-  Histogram _histogram_{};
-  std::vector<Event> _eventList_{};
-  std::vector<DatasetProperties> _loadedDatasetList_{};
 
 #ifdef GUNDAM_USING_CACHE_MANAGER
 public:
