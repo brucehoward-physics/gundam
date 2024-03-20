@@ -31,6 +31,7 @@ public:
   // Setters
   void setShowTimeStats(bool showTimeStats){ _showTimeStats_ = showTimeStats; }
   void setThrowAsimovToyParameters(bool throwAsimovToyParameters){ _throwAsimovToyParameters_ = throwAsimovToyParameters; }
+  void setThrowToyParametersPrior(bool throwToyParametersPrior){ _throwToyParametersPrior_ = throwToyParametersPrior; }
   void setEnableEigenToOrigInPropagate(bool enableEigenToOrigInPropagate){ _enableEigenToOrigInPropagate_ = enableEigenToOrigInPropagate; }
   void setIThrow(int iThrow){ _iThrow_ = iThrow; }
   void setLoadAsimovData(bool loadAsimovData){ _loadAsimovData_ = loadAsimovData; }
@@ -38,6 +39,7 @@ public:
 
   // Const getters
   [[nodiscard]] bool isThrowAsimovToyParameters() const { return _throwAsimovToyParameters_; }
+  [[nodiscard]] bool isThrowToyParametersPrior() const { return _throwToyParametersPrior_; }
   [[nodiscard]] bool isEnableStatThrowInToys() const { return _enableStatThrowInToys_; }
   [[nodiscard]] bool isEnableEventMcThrow() const { return _enableEventMcThrow_; }
   [[nodiscard]] bool isGaussStatThrowInToys() const { return _gaussStatThrowInToys_; }
@@ -94,6 +96,7 @@ private:
 
   // Internals
   bool _throwAsimovToyParameters_{false};
+  bool _throwToyParametersPrior_{false};
   bool _enableStatThrowInToys_{true};
   bool _gaussStatThrowInToys_{false};
   bool _enableEventMcThrow_{true};

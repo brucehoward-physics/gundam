@@ -206,9 +206,22 @@ int main(int argc, char** argv){
       propagator.getParametersManager().injectParameterValues( GenericToolbox::Json::readConfigJsonStr( parState_->GetTitle() ) );
       for( auto& parSet : propagator.getParametersManager().getParameterSetsList() ){
         if( not parSet.isEnabled() ){ continue; }
+
+        // Get parameter name
+        std::string par_name = parSet.getName();
+
         for( auto& par : parSet.getParameterList() ){
           if( not par.isEnabled() ){ continue; }
           par.setPriorValue( par.getParameterValue() );
+
+          // Reset parameter range for template parameters
+          // The template parameters are always positive in the fit in order to avoid
+          // negative content in the sample bin, but in xsec calculation the negative values
+          // should be allowed
+          if(par_name == "template parameters C" || par_name == "template parameters O"){
+            par.setMinValue(-30);
+            par.setMaxValue(30);
+          }
         }
       }
     });
