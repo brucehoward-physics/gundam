@@ -38,6 +38,30 @@ void LikelihoodInterface::initialize() {
     _chi2HistoryTree_->Branch("chi2Stat", (double*) _owner_->getPropagator().getLlhStatBufferPtr());
     _chi2HistoryTree_->Branch("chi2Pulls", (double*) _owner_->getPropagator().getLlhPenaltyBufferPtr());
     _chi2HistoryTree_->Branch("itSpeed", _itSpeedMon_.getCountSpeedPtr());
+    // BH BH BH
+    // We're going to do something janky and fill stuff in the propagator here... don't worry, it's only used for the chi2HistoryTree.
+    std::cout << "BH BH BH -- Initialize" << std::endl;
+    unsigned int nBhFitPars = 0;
+    const std::vector<FitParameterSet> fitParSetVec = _owner_->getPropagator().getParameterSetsList();
+    for ( auto const fitParSet : fitParSetVec ) {
+      if ( !fitParSet.isEnabled() ) continue;
+      const std::vector<FitParameter> fitParVec = fitParSet.getParameterList();
+      for ( auto const fitPar : fitParVec ) {
+        if ( !fitPar.isEnabled() ) continue;
+        std::string nameToSave = fitPar.getName();
+        if ( nameToSave=="" ) nameToSave = "Parameter"+std::to_string(nBhFitPars);
+        _owner_->getPropagator().addBhParToSave( nameToSave );
+        std::cout << nameToSave << std::endl;
+        nBhFitPars+=1;
+      }
+    }
+    // Make the branches
+    for ( unsigned int nPar = 0; nPar < _owner_->getPropagator().getBhNPars(); ++nPar ) {
+      std::string theName = _owner_->getPropagator().getBhParName(nPar);
+      _chi2HistoryTree_->Branch(theName.c_str(), (double*) _owner_->getPropagator().getBhParValPtr(nPar));
+    }
+    std::cout << "BH BH BH -- //////////" << std::endl;
+    //-----------
   }
 
   LogWarning << "Fetching the effective number of fit parameters..." << std::endl;
@@ -314,6 +338,29 @@ double LikelihoodInterface::evalFit(const double* parArray_){
 
   if( not GundamGlobals::isLightOutputMode() ){
     // Fill History
+    // BH BH BH
+    // ... But first set up the par vals to save
+    std::map<std::string,double> valsForThisStep;
+    unsigned int nBhFitPars = 0;
+    const std::vector<FitParameterSet> fitParSetVec = _owner_->getPropagator().getParameterSetsList();
+    for ( auto const fitParSet : fitParSetVec ) {
+      if ( !fitParSet.isEnabled() ) continue;
+      const std::vector<FitParameter> fitParVec = fitParSet.getParameterList();
+      for ( auto const fitPar : fitParVec ) {
+        if ( !fitPar.isEnabled() ) continue;
+        std::string nameToSave = fitPar.getName();
+        if ( nameToSave=="" ) nameToSave = "Parameter"+std::to_string(nBhFitPars);
+        valsForThisStep[nameToSave] = fitPar.getParameterValue();
+        nBhFitPars+=1;
+      }
+    }
+    // ... And put the vals to save into the right location
+    for ( unsigned int nPar = 0; nPar < _owner_->getPropagator().getBhNPars(); ++nPar ) {
+      std::string theName = _owner_->getPropagator().getBhParName(nPar);
+      double theVal = valsForThisStep[ theName ];
+      _owner_->getPropagator().setBhValToSave( nPar, theVal );
+    }
+    // ----------------------------
     _chi2HistoryTree_->Fill();
   }
 

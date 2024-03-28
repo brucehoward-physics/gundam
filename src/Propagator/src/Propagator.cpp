@@ -526,6 +526,24 @@ void Propagator::setGlobalCovarianceMatrix(const std::shared_ptr<TMatrixD> &glob
   _globalCovarianceMatrix_ = globalCovarianceMatrix;
 }
 
+// BH BH BH
+void Propagator::addBhParToSave( std::string _nameToSave ) {
+  _bhParNames_.push_back( _nameToSave );
+  _bhParVals_.push_back( 0. );
+}
+
+// BH BH BH
+void Propagator::setBhValToSave( unsigned int idxToSave, double valToSave ) {
+  if ( idxToSave >= _bhParVals_.size() ) {
+    std::cout << "BH BH BH :: -- TAKE NOTE --" << std::endl;
+    std::cout << "You are trying to save a value where it makes no sense... Skipping." << std::endl;
+    std::cout << "---------------------------" << std::endl;
+    return;
+  }
+
+  _bhParVals_[idxToSave] = valToSave;
+}
+
 bool Propagator::isThrowAsimovToyParameters() const {
   return _throwAsimovToyParameters_;
 }

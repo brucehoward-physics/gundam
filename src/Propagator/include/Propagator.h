@@ -34,6 +34,10 @@ public:
   void setParameterInjectorConfig(const nlohmann::json &parameterInjector);
   void setGlobalCovarianceMatrix(const std::shared_ptr<TMatrixD> &globalCovarianceMatrix);
 
+  // BH BH BH
+  void addBhParToSave( std::string _nameToSave );
+  void setBhValToSave( unsigned int idxToSave, double valToSave );
+
   // Const getters
   [[nodiscard]] bool isThrowAsimovToyParameters() const;
   [[nodiscard]] int getIThrow() const;
@@ -46,6 +50,11 @@ public:
   [[nodiscard]] const std::shared_ptr<TMatrixD> &getStrippedCovarianceMatrix() const;
   [[nodiscard]] const std::vector<DatasetLoader> &getDataSetList() const;
   [[nodiscard]] const std::vector<FitParameterSet> &getParameterSetsList() const;
+
+  // BH BH BH
+  [[nodiscard]] std::string getBhParName(unsigned int _entryNum) const { return _bhParNames_.at(_entryNum); }
+  [[nodiscard]] double getBhParVal(unsigned int _entryNum) const { return _bhParVals_.at(_entryNum); }
+  [[nodiscard]] unsigned int getBhNPars() const { return _bhParNames_.size(); }
 
   const std::vector<DialCollection> &getDialCollections() const;
 
@@ -68,6 +77,9 @@ public:
   [[nodiscard]] FitParameterSet* getFitParameterSetPtr(const std::string& name_);
   [[nodiscard]] DatasetLoader* getDatasetLoaderPtr(const std::string& name_);
   [[nodiscard]] EventDialCache& getEventDialCache();
+
+  // BH BH BH
+  [[nodiscard]] const double* getBhParValPtr(unsigned int _entryNum) const { return &_bhParVals_[_entryNum]; }
 
   // Core
   void updateLlhCache();
@@ -122,6 +134,10 @@ private:
 
   bool _devSingleThreadReweight_{false};
   bool _devSingleThreadHistFill_{false};
+
+  // BH BH BH --> Additional internals to put parameter values before filling...
+  std::vector<std::string> _bhParNames_{ std::vector<std::string>() };
+  std::vector<double> _bhParVals_{ std::vector<double>() };
 
   // Sub-layers
   FitSampleSet _fitSampleSet_;
