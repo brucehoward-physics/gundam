@@ -102,10 +102,10 @@ void LikelihoodInterface::initialize() {
   _isInitialized_ = true;
 }
 
-void LikelihoodInterface::saveChi2History() {
+void LikelihoodInterface::saveChi2History( std::string useFolder ) {
   if( not GundamGlobals::isLightOutputMode() ){
     LogInfo << "Saving LLH history..." << std::endl;
-    GenericToolbox::writeInTFile(GenericToolbox::mkdirTFile(_owner_->getSaveDir(), "fit"), _chi2HistoryTree_.get());
+    GenericToolbox::writeInTFile(GenericToolbox::mkdirTFile(_owner_->getSaveDir(), useFolder), _chi2HistoryTree_.get());
   }
   else{
     LogAlert << "Not saving LLH history as light output mode is fired." << std::endl;

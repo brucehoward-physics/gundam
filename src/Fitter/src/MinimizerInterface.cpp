@@ -348,6 +348,11 @@ void MinimizerInterface::calcErrors(){
     for( int iFitPar = 0 ; iFitPar < _minimizer_->NDim() ; iFitPar++ ){
       getMinimizerFitParameterPtr()[iFitPar]->setParameterValue(_minimizer_->X()[iFitPar]);
     }
+
+    // Save tree again... (BH BH BH)
+    getLikelihood().saveChi2History("fit_minos");
+    ////////////////////////////////
+
   } // Minos
   else if( _errorAlgo_ == "Hesse" ){
 
@@ -380,7 +385,7 @@ void MinimizerInterface::calcErrors(){
     getLikelihood().enableFitMonitor();
     _fitHasConverged_ = _minimizer_->Hesse();
     // Save tree again... (BH BH BH)
-    getLikelihood().saveChi2History();
+    getLikelihood().saveChi2History("fit_hesse");
     ////////////////////////////////
     getLikelihood().disableFitMonitor();
 

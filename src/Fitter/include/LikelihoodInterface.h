@@ -152,7 +152,7 @@ public:
   bool isMonitorGradientDescent() const { return _monitorGradientDescent_; }
 
   /// Save the chi2 history to the current output file.
-  void saveChi2History();
+  void saveChi2History( std::string useFolder="fit" );
 
   /// Save each step
   void saveGradientSteps();
