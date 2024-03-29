@@ -379,6 +379,9 @@ void MinimizerInterface::calcErrors(){
 
     getLikelihood().enableFitMonitor();
     _fitHasConverged_ = _minimizer_->Hesse();
+    // Save tree again... (BH BH BH)
+    getLikelihood().saveChi2History();
+    ////////////////////////////////
     getLikelihood().disableFitMonitor();
 
     LogInfo << "Hesse ended after " << getLikelihood().getNbFitCalls() - nbFitCallOffset << " calls." << std::endl;
